@@ -1,31 +1,43 @@
 <!DOCTYPE html>
 <html>
-  <head>
-<style>
-  .container {
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  padding-top: 56.25%; /* 16:9 Aspect Ratio (divide 9 by 16 = 0.5625) */
-}
-
-/* Then style the iframe to fit in the container div with full height and width */
-.responsive-iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-}
-</style>
-  </head>
+<head>
+  <title>Video to Frames</title>
+</head>
 <body>
-<h1>
-  <strong>Nora/Jimmy - A Seedfolks extension by Walker Baksa</strong>
-</h1>
-  <div class="container">
-  <iframe class="responsive-iframe" src="https://docs.google.com/document/d/e/2PACX-1vQeAcsnVMYbCskWcNcPdwwDTHt4LtaZUe5pNEoPpKI4WFFM-o8Moe0gYvLC-ApAZOOSL59uTQPuoVdB/pub?embedded=true"></iframe>
-</div>
+  <h1>Video to Frames</h1>
+  <input type="file" id="videoInput" accept="video/*">
+
+  <script>
+    const videoInput = document.getElementById('videoInput');
+
+    videoInput.addEventListener('change', function() {
+      const video = document.createElement('video');
+      video.src = URL.createObjectURL(this.files[0]);
+      video.addEventListener('loadedmetadata', function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+
+        let currentTime = 0;
+        const interval = setInterval(function() {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = canvas.toDataURL('image/jpeg', 0.8); // 0.8 is the quality of the JPEG image
+
+          // Create a link element to download the frame
+          const link = document.createElement('a');
+          link.download = `frame_${currentTime.toFixed(2)}.jpg`;
+          link.href = imageData;
+          link.click();
+
+          currentTime += 1000 / video.fps;
+          if (currentTime >= video.duration * 1000) {
+            clearInterval(interval);
+          }
+          video.currentTime = currentTime / 1000;
+        }, 1000 / video.fps);
+      });
+    });
+  </script>
+</body>
 </html>
